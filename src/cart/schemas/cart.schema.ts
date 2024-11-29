@@ -1,22 +1,16 @@
-// src/cart/schemas/cart.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { Product } from 'src/product/schemas/product.schema';
-import { User } from 'src/user/schemas/user.schema';
+import { Document, Types } from 'mongoose';
 
-@Schema()
+@Schema({ timestamps: true }) // Automatically adds `createdAt` and `updatedAt`
 export class Cart extends Document {
-  @Prop({ type: User, required: true })
-  user: User;
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true }) // Reference to User schema
+  user: Types.ObjectId;
 
-  @Prop({ type: [{ type: Product }] })
-  products: Product[];
-
-  @Prop({ default: Date.now })
-  createdAt: Date;
-
-  @Prop()
-  updatedAt: Date;
+  @Prop({
+    type: [{ type: Types.ObjectId, ref: 'Product' }], // Array of Product references
+    default: [], // Initialize as an empty array
+  })
+  products: Types.ObjectId[];
 }
 
 export const CartSchema = SchemaFactory.createForClass(Cart);

@@ -9,20 +9,12 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 export class ProductsService {
   constructor(
     @InjectModel(Product.name) private readonly productModel: Model<Product>,
-    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async create(
-    createProductDto: any,
-    files: Express.Multer.File[],
-  ): Promise<Product> {
-    // const createdProduct = new this.productModel(createProductDto);
-    const images = await this.cloudinaryService.uploadImages(files);
-
+  async create(createProductDto: any): Promise<Product> {
     // Create the new product with the uploaded image URL
     const newProduct = new this.productModel({
       ...createProductDto,
-      images,
     });
     return newProduct.save();
   }

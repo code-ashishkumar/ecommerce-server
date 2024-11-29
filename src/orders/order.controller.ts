@@ -1,14 +1,16 @@
 // src/orders/orders.controller.ts
 import { Controller, Post, Get, Param, Body, Put } from '@nestjs/common';
 import { OrdersService } from './order.service';
-
+import { ApiTags } from '@nestjs/swagger';
+import { CreateOrderDto } from './dto/orders.dto';
+@ApiTags('orders')
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post('create')
-  async createOrder(@Body() createOrderDto: { userId: string; productIds: string[]; totalAmount: number }) {
-    return this.ordersService.createOrder(createOrderDto.userId, createOrderDto.productIds, createOrderDto.totalAmount);
+  async createOrder(@Body() createOrderDto: CreateOrderDto) {
+    return this.ordersService.createOrder(createOrderDto);
   }
 
   @Get('user/:userId')
@@ -22,7 +24,10 @@ export class OrdersController {
   }
 
   @Put('update/:orderId')
-  async updateOrderStatus(@Param('orderId') orderId: string, @Body() status: { status: string }) {
+  async updateOrderStatus(
+    @Param('orderId') orderId: string,
+    @Body() status: { status: string },
+  ) {
     return this.ordersService.updateOrderStatus(orderId, status.status);
   }
 }

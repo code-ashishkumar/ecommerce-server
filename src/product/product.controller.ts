@@ -14,7 +14,9 @@ import {
 import { ProductsService } from './product.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateProductDto } from './dto/create-product.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+ApiTags('products');
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
@@ -23,9 +25,9 @@ export class ProductsController {
   @UseInterceptors(FileInterceptor('file'))
   async create(
     @Body() productDto: CreateProductDto,
-    @UploadedFiles() files: Express.Multer.File[],
+  
   ) {
-    return this.productsService.create(productDto, files);
+    return this.productsService.create(productDto);
   }
 
   @Get()

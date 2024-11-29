@@ -1,4 +1,9 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
@@ -17,13 +22,15 @@ export class UsersService {
   // Register a new user
   async register(createUserDto: CreateUserDto): Promise<Partial<User>> {
     const { email, password, role } = createUserDto;
-    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Check if the user already exists
     const existingUser = await this.userModel.findOne({ email });
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new this.userModel({
       email,
@@ -32,6 +39,8 @@ export class UsersService {
     });
 
     const savedUser = await newUser.save();
+
+    // Return non-sensitive user data
     return {
       id: savedUser._id,
       email: savedUser.email,
@@ -42,23 +51,32 @@ export class UsersService {
   // Login a user and return a JWT token
   async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string }> {
     const { email, password } = loginUserDto;
+
+    // Find the user by email
     const user = await this.userModel.findOne({ email });
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
+    // Validate the password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { email: user.email, role: user.role };
+    // Create and sign the JWT token
+    const payload = { email: user.email, role: user.role, sub: user._id };
     const accessToken = this.jwtService.sign(payload);
+
     return { accessToken };
   }
 
   // Get user by email
-  async findByEmail(email: string): Promise<User> {
-    return this.userModel.findOne({ email });
+  async findByEmail(email: string): Promise<Partial<User>> {
+    const user = await this.userModel.findOne({ email }).select('-password');
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+    return user;
   }
 }

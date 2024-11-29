@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
-import { CloudinaryController } from './cloudinary.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { CloudinaryController } from './cloudinary.controller'; // Add CloudinaryController
 import { CloudinaryService } from './cloudinary.service';
-import { CloudinaryProvider } from './cloudinary.provider';
 
 @Module({
-  imports: [],
-  providers: [CloudinaryProvider, CloudinaryService],
-  controllers: [CloudinaryController],
-  exports: [CloudinaryService],
+  imports: [
+    MongooseModule.forFeature([]), // Add models here if required for Cloudinary-related persistence
+  ],
+  controllers: [CloudinaryController], // Correct controller reference
+  providers: [CloudinaryService],
+  exports: [CloudinaryService], // Export for use in other modules
 })
 export class CloudinaryModule {}
